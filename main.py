@@ -31,7 +31,7 @@ def download_etf_data(etf_codes, start_date, interval='60m', rsi_window=14):
                 continue
             
             # Calculate RSI directly if data is available
-            df['RSI'] = ta.momentum.rsi(df['Close'], window=rsi_window)
+            df['RSI'] = round(ta.momentum.rsi(df['Close'], window=rsi_window),2)
             etf_rsi[etf.split('.')[0]] = df  # Store with ETF name without suffix
 
         except Exception as e:
