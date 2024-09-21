@@ -18,26 +18,36 @@ etf_codes = [
 st.title("ETF Latest RSI Dashboard")
 st.write("This dashboard displays the latest RSI value for each ETF.")
 
-etf_rsi_data, etf_daily_rsi_data = get_latest_rsi_data(etf_codes)
+etf_rsi_data, etf_daily_rsi_ma_data = get_latest_rsi_data(etf_codes)
 
 # Prepare DataFrame for hourly RSI
 rsi_df_hourly = pd.DataFrame({
     "ETF": [etf.split('.')[0] for etf in etf_rsi_data.keys()],
-    "Hourly RSI": [int(df['RSI'].dropna().iloc[-1]) for df in etf_rsi_data.values()]
+    "Hourly RSI": [df['RSI'].dropna().iloc[-1] for df in etf_rsi_data.values()]
 })
 
-# Prepare DataFrame for daily RSI
-rsi_df_daily = pd.DataFrame({
-    "ETF": [etf.split('.')[0] for etf in etf_daily_rsi_data.keys()],
-    "Daily RSI": [int(df['RSI'].dropna().iloc[-1]) for df in etf_daily_rsi_data.values()]
+# Prepare DataFrame for daily RSI and Moving Averages
+# Prepare DataFrame for daily RSI and Moving Averages
+rsi_ma_df_daily = pd.DataFrame({
+    "ETF": [etf.split('.')[0] for etf in etf_daily_rsi_ma_data.keys()],
+    "Daily RSI": [df['RSI'].dropna().iloc[-1] if not df['RSI'].dropna().empty else None for df in etf_daily_rsi_ma_data.values()],
+    "20DMA": [df['20DMA'].dropna().iloc[-1] if not df['20DMA'].dropna().empty else None for df in etf_daily_rsi_ma_data.values()],
+    "50DMA": [df['50DMA'].dropna().iloc[-1] if not df['50DMA'].dropna().empty else None for df in etf_daily_rsi_ma_data.values()],
+    "100DMA": [df['100DMA'].dropna().iloc[-1] if not df['100DMA'].dropna().empty else None for df in etf_daily_rsi_ma_data.values()],
+    "200DMA": [df['200DMA'].dropna().iloc[-1] if not df['200DMA'].dropna().empty else None for df in etf_daily_rsi_ma_data.values()]
 })
 
-# Merge both DataFrames to display both Hourly and Daily RSI
-combined_rsi_df = pd.merge(rsi_df_hourly, rsi_df_daily, on='ETF')
-combined_rsi_df = combined_rsi_df.sort_values(by=["Daily RSI", "Hourly RSI"])
-# Highlight cells where RSI < 40
-def highlight_rsi(val):
-    return f'color: {"red" if val < 40 else "black"}'
+# Merge both DataFrames to display both Hourly and Daily RSI + Moving Averages
+combined_rsi_df = pd.merge(rsi_df_hourly, rsi_ma_df_daily, on='ETF')
+combined_rsi_df = combined_rsi_df.sort_values(by=["200DMA", "100DMA", "50DMA", "20DMA", "Daily RSI"])
+# Highlight cells where RSI < 40 or specific moving averages are of interest
+def highlight_rsi_ma(val):
+    if val < 40:  # Highlight RSI if less than 40
+        return 'color: red'
+    elif isinstance(val, float):  # Highlight Moving Averages (for visual purposes)
+        return 'color: blue'
+    return ''
 
-styled_df = combined_rsi_df.style.map(highlight_rsi, subset=['Hourly RSI', 'Daily RSI'])
+styled_df = combined_rsi_df.style.map(highlight_rsi_ma, subset=['Hourly RSI', 'Daily RSI', '20DMA', '50DMA', '100DMA', '200DMA'])
 st.table(styled_df)
+
