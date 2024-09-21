@@ -91,7 +91,7 @@ etf_rsi_data = get_latest_rsi_data(etf_codes)
 # Prepare DataFrame directly from the dictionary
 rsi_df = pd.DataFrame({
     "ETF": [etf.split('.')[0] for etf in etf_rsi_data.keys()],
-    "RSI": [df['RSI'].dropna().iloc[-1] for df in etf_rsi_data.values()]
+    "RSI": [int(df['RSI'].dropna().iloc[-1]) for df in etf_rsi_data.values()]
 }).sort_values(by='RSI')
 
 def highlight_rsi(val):
