@@ -1,4 +1,4 @@
 yfinance
 pandas
 ta
-streamlitRS
+streamlit
